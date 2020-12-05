@@ -230,14 +230,12 @@ def main():
     logger.close()
     train_output = [train_losses, test_losses, train_acces, test_acces]
     label = ['train_losses', 'test_losses', 'train_accs', 'test_accs']
-    dfs = []
+    df = []
     for i in range(len(train_output)):
-        df = pd.DataFrame(data[i])
-        df = pd.melt(df, var_name='episode', value_name='loss')
-        dfs.append(df)
-        dfs[i]['algo'] = label[i]
+        df.append(pd.DataFrame(train_output[i]).melt(var_name='episode', value_name='loss'))
+        df[i]['algo'] = label[i]
 
-    df = pd.concat(dfs)  # 合并
+    df = pd.concat(df)  # 合并
     sns.lineplot(x="episode", y="loss", hue="algo", style="algo", data=df)
     # sns.lineplot(x=range(len(train_acces)), y= train_acces)
     # sns.lineplot(x=range(len(train_losses)), y=train_losses)
