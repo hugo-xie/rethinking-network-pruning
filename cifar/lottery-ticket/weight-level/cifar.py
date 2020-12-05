@@ -13,11 +13,18 @@ import torch.optim as optim
 import torch.utils.data as data
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+import numpy as np
+import seaborn as sns
 
 import models.cifar as models
 
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
 
+sns.set_theme(style="darkgrid")
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
@@ -187,7 +194,10 @@ def main():
         return
 
     save_checkpoint({'state_dict': model.state_dict()}, False, checkpoint=args.save_dir, filename='init.pth.tar')
-
+    train_losses = []
+    train_acces = []
+    test_losses = []
+    test_acces  = []
     # Train and val
     for epoch in range(start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch)
@@ -196,6 +206,11 @@ def main():
 
         train_loss, train_acc = train(trainloader, model, criterion, optimizer, epoch, use_cuda)
         test_loss, test_acc = test(testloader, model, criterion, epoch, use_cuda)
+
+        train_losses.append(train_loss.item())
+        train_acces.append(train_acc)
+        test_acces.append(test_acc)
+        test_losses.append(test_loss)
 
         # append logger file
         logger.append([state['lr'], train_loss, test_loss, train_acc, test_acc])
@@ -212,6 +227,11 @@ def main():
             }, is_best, checkpoint=args.save_dir)
 
     logger.close()
+    sns.lineplot(x=range(len(train_acces)), y= train_acces)
+    sns.lineplot(x=range(len(train_losses)), y=train_losses)
+    plt.xlabel("episode")
+    plt.ylabel("reward")
+    plt.savefig("test.png")
 
     print('Best acc:')
     print(best_acc)
