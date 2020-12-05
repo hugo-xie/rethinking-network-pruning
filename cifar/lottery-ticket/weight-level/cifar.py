@@ -228,10 +228,11 @@ def main():
             }, is_best, checkpoint=args.save_dir)
 
     logger.close()
-    sns.lineplot(x=range(len(train_acces)), y= train_acces)
-    sns.lineplot(x=range(len(train_losses)), y=train_losses, dashed=True)
+    sns.lineplot(x=range(len(train_acces)), y= train_acces, color='green')
+    sns.lineplot(x=range(len(train_losses)), y=train_losses, color='green',dashes=True)
     plt.xlabel("episode")
     plt.ylabel("reward")
+    plt.legend()
     plt.savefig("test.png")
 
     print('Best acc:')
