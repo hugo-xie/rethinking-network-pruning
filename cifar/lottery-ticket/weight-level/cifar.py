@@ -25,7 +25,8 @@ import models.cifar as models
 
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
 import cv2
-import Image
+
+from PIL import Image
 sns.set()
 
 model_names = sorted(name for name in models.__dict__
