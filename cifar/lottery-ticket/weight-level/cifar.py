@@ -208,10 +208,10 @@ def main():
         train_loss, train_acc = train(trainloader, model, criterion, optimizer, epoch, use_cuda)
         test_loss, test_acc = test(testloader, model, criterion, epoch, use_cuda)
 
-        train_losses.append(train_loss, dashes=True)
+        train_losses.append(train_loss)
         train_acces.append(train_acc)
         test_acces.append(test_acc)
-        test_losses.append(test_loss, dashes=True)
+        test_losses.append(test_loss)
 
         # append logger file
         logger.append([state['lr'], train_loss, test_loss, train_acc, test_acc])
@@ -237,12 +237,12 @@ def main():
         dfs.append(df)
         dfs[i]['algo'] = label[i]
 
-    df = pd.concat(df)  # 合并
+    df = pd.concat(dfs)  # 合并
     sns.lineplot(x="episode", y="loss", hue="algo", style="algo", data=df)
-    sns.lineplot(x=range(len(train_acces)), y= train_acces)
-    sns.lineplot(x=range(len(train_losses)), y=train_losses)
-    plt.xlabel("episode")
-    plt.ylabel("reward")
+    # sns.lineplot(x=range(len(train_acces)), y= train_acces)
+    # sns.lineplot(x=range(len(train_losses)), y=train_losses)
+    # plt.xlabel("episode")
+    # plt.ylabel("reward")
     plt.savefig("test.png")
 
     print('Best acc:')
