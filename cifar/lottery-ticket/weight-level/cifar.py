@@ -24,7 +24,7 @@ import models.cifar as models
 
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
 
-sns.set_theme(style="darkgrid")
+sns.set()
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
