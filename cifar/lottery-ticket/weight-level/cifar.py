@@ -207,7 +207,7 @@ def main():
         train_loss, train_acc = train(trainloader, model, criterion, optimizer, epoch, use_cuda)
         test_loss, test_acc = test(testloader, model, criterion, epoch, use_cuda)
 
-        train_losses.append(train_loss.item())
+        train_losses.append(train_loss)
         train_acces.append(train_acc)
         test_acces.append(test_acc)
         test_losses.append(test_loss)
