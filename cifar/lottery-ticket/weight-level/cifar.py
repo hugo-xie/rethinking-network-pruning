@@ -24,7 +24,8 @@ import pandas as pd
 import models.cifar as models
 
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
-
+import cv2
+import Image
 sns.set()
 
 model_names = sorted(name for name in models.__dict__
@@ -97,6 +98,15 @@ if use_cuda:
     torch.cuda.manual_seed_all(args.manualSeed)
 
 best_acc = 0  # best test accuracy
+
+
+def laplace_process(img):
+    img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+    gray_lap = cv2.Laplacian(img, cv2.CV_16S, ksize=3)
+    dst = cv2.convertScaleAbs(gray_lap)
+    image = Image.fromarray(cv2.cvtColor(dst, cv2.COLOR_BGR2RGB))
+
+    return image
 
 def main():
     global best_acc
