@@ -16,7 +16,7 @@ import torchvision.datasets as datasets
 import matplotlib
 matplotlib.use('Agg')
 import seaborn as sns
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 import models.cifar as models
 
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
