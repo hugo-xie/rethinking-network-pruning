@@ -15,12 +15,8 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
-import numpy as np
 import seaborn as sns
-import pandas as pd
-
+from torch.utils.tensorboard import SummaryWriter
 import models.cifar as models
 
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
@@ -79,6 +75,7 @@ parser.add_argument('--save_dir', default='results/', type=str)
 #Device options
 parser.add_argument('--gpu-id', default='0', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
+parser.add_argument('--exp_name', default='', type=str, help="")
 
 args = parser.parse_args()
 state = {k: v for k, v in args._get_kwargs()}
@@ -103,7 +100,7 @@ def main():
     start_epoch = args.start_epoch  # start from epoch 0 or last checkpoint epoch
 
     os.makedirs(args.save_dir, exist_ok=True)
-
+    writer = SummaryWriter(log_dir=os.path.join('./log_dir', args.exp_name))
     # Data
     print('==> Preparing dataset %s' % args.dataset)
     transform_train = transforms.Compose([
@@ -195,10 +192,6 @@ def main():
         return
 
     save_checkpoint({'state_dict': model.state_dict()}, False, checkpoint=args.save_dir, filename='init.pth.tar')
-    train_losses = []
-    train_acces = []
-    test_losses = []
-    test_acces  = []
     # Train and val
     for epoch in range(start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch)
@@ -207,11 +200,6 @@ def main():
 
         train_loss, train_acc = train(trainloader, model, criterion, optimizer, epoch, use_cuda)
         test_loss, test_acc = test(testloader, model, criterion, epoch, use_cuda)
-
-        train_losses.append(train_loss)
-        train_acces.append(train_acc)
-        test_acces.append(test_acc)
-        test_losses.append(test_loss)
 
         # append logger file
         logger.append([state['lr'], train_loss, test_loss, train_acc, test_acc])
@@ -226,14 +214,6 @@ def main():
                 'best_acc': best_acc,
                 'optimizer' : optimizer.state_dict(),
             }, is_best, checkpoint=args.save_dir)
-
-    logger.close()
-    sns.lineplot(x=range(len(train_acces)), y= train_acces, color='green')
-    sns.lineplot(x=range(len(train_losses)), y=train_losses, color='green',dashes=True)
-    plt.xlabel("episode")
-    plt.ylabel("reward")
-    plt.legend()
-    plt.savefig("test.png")
 
     print('Best acc:')
     print(best_acc)
