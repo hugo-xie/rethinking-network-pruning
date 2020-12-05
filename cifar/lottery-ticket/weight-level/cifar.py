@@ -235,7 +235,7 @@ def main():
         df.append(pd.DataFrame(train_output[i]).melt(var_name='episode', value_name='loss'))
 
     df = pd.concat(df)  # 合并
-    sns.lineplot(x="episode", y="loss", hue="algo", style="algo", data=df)
+    sns.lineplot(x="episode", y="loss", data=df)
     # sns.lineplot(x=range(len(train_acces)), y= train_acces)
     # sns.lineplot(x=range(len(train_losses)), y=train_losses)
     # plt.xlabel("episode")
