@@ -208,10 +208,10 @@ def main():
         train_loss, train_acc = train(trainloader, model, criterion, optimizer, epoch, use_cuda)
         test_loss, test_acc = test(testloader, model, criterion, epoch, use_cuda)
 
-        train_losses.append(train_loss)
+        train_losses.append(train_loss, dashes=True)
         train_acces.append(train_acc)
         test_acces.append(test_acc)
-        test_losses.append(test_loss)
+        test_losses.append(test_loss, dashes=True)
 
         # append logger file
         logger.append([state['lr'], train_loss, test_loss, train_acc, test_acc])
@@ -230,13 +230,19 @@ def main():
     logger.close()
     train_output = [train_losses, test_losses, train_acces, test_acces]
     label = ['train_losses', 'test_losses', 'train_accs', 'test_accs']
-    df = []
+    dfs = []
     for i in range(len(train_output)):
-        df.append(pd.DataFrame(data[i]).melt(var_name='episode', value_name='loss'))
-        df[i]['algo'] = label[i]
+        df = pd.DataFrame(data[i])
+        df = pd.melt(df, var_name='episode', value_name='loss')
+        dfs.append(df)
+        dfs[i]['algo'] = label[i]
 
     df = pd.concat(df)  # 合并
-    sns.lineplot(x="episode", y="loss", style="algo", data=df)
+    sns.lineplot(x="episode", y="loss", hue="algo", style="algo", data=df)
+    sns.lineplot(x=range(len(train_acces)), y= train_acces)
+    sns.lineplot(x=range(len(train_losses)), y=train_losses)
+    plt.xlabel("episode")
+    plt.ylabel("reward")
     plt.savefig("test.png")
 
     print('Best acc:')
