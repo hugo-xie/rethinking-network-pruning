@@ -228,18 +228,10 @@ def main():
             }, is_best, checkpoint=args.save_dir)
 
     logger.close()
-    train_output = [[train_losses], [test_losses], [train_acces], [test_acces]]
-    label = ['train_losses', 'test_losses', 'train_accs', 'test_accs']
-    df = []
-    for i in range(len(train_output)):
-        df.append(pd.DataFrame(train_output[i]).melt(var_name='episode', value_name='loss'))
-
-    df = pd.concat(df)  # 合并
-    sns.lineplot(x="episode", y="loss", data=df)
-    # sns.lineplot(x=range(len(train_acces)), y= train_acces)
-    # sns.lineplot(x=range(len(train_losses)), y=train_losses)
-    # plt.xlabel("episode")
-    # plt.ylabel("reward")
+    sns.lineplot(x=range(len(train_acces)), y= train_acces)
+    sns.lineplot(x=range(len(train_losses)), y=train_losses, dashed=True)
+    plt.xlabel("episode")
+    plt.ylabel("reward")
     plt.savefig("test.png")
 
     print('Best acc:')
