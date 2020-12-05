@@ -201,6 +201,10 @@ def main():
         train_loss, train_acc = train(trainloader, model, criterion, optimizer, epoch, use_cuda)
         test_loss, test_acc = test(testloader, model, criterion, epoch, use_cuda)
 
+        writer.add_scalar("train_loss", train_loss, epoch)
+        writer.add_scalar("train_acc", train_acc, epoch)
+        writer.add_scalar("test_loss", test_loss, epoch)
+        writer.add_scalar("test_acc", test_acc, epoch)
         # append logger file
         logger.append([state['lr'], train_loss, test_loss, train_acc, test_acc])
 
