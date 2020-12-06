@@ -18,9 +18,11 @@ args = parser.parse_args()
 
 #import pdb; pdb.set_trace()
 ori_data = pd.read_table(args.ori, sep='\t')
+inverse_data = pd.read_table(args.inverse, sep='\t')
 print(ori_data)
 
 sns.lineplot(x=range(ori_data['Valid Acc.'].shape[0]), y=ori_data['Valid Acc.'], color='red',dashes=True)
+sns.lineplot(x=range(inverse_data['Valid Acc.'].shape[0]), y=ori_data['Valid Acc.'], color='green',dashes=True)
 plt.xlabel("episode")
 plt.ylabel("accuracy")
 plt.legend()
