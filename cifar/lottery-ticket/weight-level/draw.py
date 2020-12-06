@@ -16,7 +16,7 @@ parser.add_argument('--inverse', default='0', type=str, metavar='N',
 parser.add_argument('--name', default="pruned.png", type=str)
 args = parser.parse_args()
 
-import pdb; pdb.set_trace()
+#import pdb; pdb.set_trace()
 ori_data = pd.read_table(args.ori, sep='\t')
 print(ori_data)
 
