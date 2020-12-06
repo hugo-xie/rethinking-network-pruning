@@ -97,6 +97,20 @@ if use_cuda:
 
 best_acc = 0  # best test accuracy
 
+def wave_process(img):
+
+    img = cv2.cvtColor(np.asarray(img),cv2.COLOR_RGB2BGR)
+    out = []
+    for i in range(0,3):
+        coeffs2 = pywt.dwt2(img[:,:,i], 'bior1.3')
+        LL, (LH, HL, HH) = coeffs2
+        out.append(pywt.idwt2((LL,(LH*0, HL*0, HH*0)), 'bior1.3'))
+    out = np.stack(out, axis=2)
+    out = cv2.convertScaleAbs(out)
+    image = Image.fromarray(cv2.cvtColor(out, cv2.COLOR_BGR2RGB))
+    # image.show()
+    return image
+
 def laplace_process(img):
     img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
     gray_lap = cv2.Laplacian(img, cv2.CV_16S, ksize=3)
