@@ -128,11 +128,30 @@ def lbp_process(img):
 
     return image
 
-if args.high:
-    frequence_func = laplace_process
-else:
-    frequence_func = lbp_process
+def wave_process(img):
 
+    img = cv2.cvtColor(np.asarray(img),cv2.COLOR_RGB2BGR)
+    out = []
+    for i in range(0,3):
+        coeffs2 = pywt.dwt2(img[:,:,i], 'bior1.3')
+        LL, (LH, HL, HH) = coeffs2
+        if args.high:
+            out.append(pywt.idwt2((LL*0,(LH, HL, HH)), 'bior1.3'))
+        else:
+            out.append(pywt.idwt2((LL, (LH*0, HL*0, HH*0)), 'bior1.3'))
+
+    out = np.stack(out, axis=2)
+    out = cv2.convertScaleAbs(out)
+    image = Image.fromarray(cv2.cvtColor(out, cv2.COLOR_BGR2RGB))
+
+    return image
+
+# if args.high:
+#     frequence_func = laplace_process
+# else:
+#     frequence_func = lbp_process
+
+frequence_func = wave_process
 def main():
     global best_acc
     start_epoch = args.start_epoch  # start from epoch 0 or last checkpoint epoch
