@@ -17,6 +17,10 @@ import torchvision.datasets as datasets
 
 import models.cifar as models
 
+import cv2
+import numpy as np
+from PIL import Image
+
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
 from utils.misc import get_conv_zero_param
 
@@ -94,6 +98,34 @@ if use_cuda:
 
 best_acc = 0  # best test accuracy
 
+def laplace_process(img):
+    img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+    gray_lap = cv2.Laplacian(img, cv2.CV_16S, ksize=3)
+    dst = cv2.convertScaleAbs(gray_lap)
+    image = Image.fromarray(cv2.cvtColor(dst, cv2.COLOR_BGR2RGB))
+
+    return image
+
+
+def lbp_process(img):
+
+    radius = 1
+    n_points = 8 * radius
+    img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+    out = []
+    for i in range(0, 3):
+        out.append(local_binary_pattern(img[:, :, i], n_points, radius))
+    out = np.stack(out, axis=2)
+    out = cv2.convertScaleAbs(out)
+    image = Image.fromarray(cv2.cvtColor(out, cv2.COLOR_BGR2RGB))
+
+    return image
+
+if args.high:
+    frequence_func = laplace_process
+else:
+    frequence_func = lbp_process
+
 def main():
     global best_acc
     start_epoch = args.start_epoch  # start from epoch 0 or last checkpoint epoch
@@ -103,6 +135,7 @@ def main():
     # Data
     print('==> Preparing dataset %s' % args.dataset)
     transform_train = transforms.Compose([
+        frequence_func,
         transforms.RandomCrop(32, padding=4),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
@@ -110,6 +143,7 @@ def main():
     ])
 
     transform_test = transforms.Compose([
+        frequence_func,
         transforms.ToTensor(),
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
     ])
