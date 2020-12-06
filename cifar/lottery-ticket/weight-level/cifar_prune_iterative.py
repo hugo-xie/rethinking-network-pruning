@@ -72,6 +72,7 @@ parser.add_argument('--save_dir', default='test_checkpoint/', type=str)
 parser.add_argument('--gpu-id', default='0', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
 parser.add_argument('--percent', default=0.6, type=float)
+parser.add_argument('--high', action='store_true')
 
 args = parser.parse_args()
 state = {k: v for k, v in args._get_kwargs()}
@@ -91,6 +92,34 @@ if use_cuda:
 
 best_acc = 0  # best test accuracy
 
+def laplace_process(img):
+    img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+    gray_lap = cv2.Laplacian(img, cv2.CV_16S, ksize=3)
+    dst = cv2.convertScaleAbs(gray_lap)
+    image = Image.fromarray(cv2.cvtColor(dst, cv2.COLOR_BGR2RGB))
+
+    return image
+
+
+def lbp_process(img):
+
+    radius = 1
+    n_points = 8 * radius
+    img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+    out = []
+    for i in range(0, 3):
+        out.append(local_binary_pattern(img[:, :, i], n_points, radius))
+    out = np.stack(out, axis=2)
+    out = cv2.convertScaleAbs(out)
+    image = Image.fromarray(cv2.cvtColor(out, cv2.COLOR_BGR2RGB))
+
+    return image
+
+if args.high:
+    frequence_func = laplace_process
+else:
+    frequence_func = lbp_process
+
 def main():
     global best_acc
     start_epoch = args.start_epoch  # start from epoch 0 or last checkpoint epoch
@@ -100,6 +129,7 @@ def main():
     # Data
     print('==> Preparing dataset %s' % args.dataset)
     transform_train = transforms.Compose([
+        frequence_func,
         transforms.RandomCrop(32, padding=4),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
