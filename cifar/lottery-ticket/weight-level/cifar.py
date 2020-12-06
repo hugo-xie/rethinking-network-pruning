@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import pandas as pd
-
+from skimage.feature import local_binary_pattern
 import models.cifar as models
 
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
@@ -73,7 +73,7 @@ parser.add_argument('--widen-factor', type=int, default=4, help='Widen factor. 4
 parser.add_argument('--growthRate', type=int, default=12, help='Growth rate for DenseNet.')
 parser.add_argument('--compressionRate', type=int, default=1, help='Compression Rate (theta) for DenseNet.')
 # Miscs
-parser.add_argument('--manualSeed', type=int, help='manual seed')
+parser.add_argument('--manualSeed', default=2020, type=int, help='manual seed')
 parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='evaluate model on validation set')
 
@@ -81,6 +81,8 @@ parser.add_argument('--save_dir', default='results/', type=str)
 #Device options
 parser.add_argument('--gpu-id', default='0', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
+parser.add_argument('--high', action='store_true')
+parser.add_argument('--init_pth', type=str, help='init pth for model')
 
 args = parser.parse_args()
 state = {k: v for k, v in args._get_kwargs()}
@@ -90,9 +92,9 @@ assert args.dataset == 'cifar10' or args.dataset == 'cifar100', 'Dataset can onl
 
 use_cuda = torch.cuda.is_available()
 
-# Random seed
-if args.manualSeed is None:
-    args.manualSeed = random.randint(1, 10000)
+# # Random seed
+# if args.manualSeed is None:
+#     args.manualSeed = random.randint(1, 10000)
 random.seed(args.manualSeed)
 torch.manual_seed(args.manualSeed)
 if use_cuda:
@@ -109,6 +111,27 @@ def laplace_process(img):
 
     return image
 
+
+def lbp_process(img):
+
+    radius = 1
+    n_points = 8 * radius
+    img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+    out = []
+    for i in range(0, 3):
+        out.append(local_binary_pattern(img[:, :, i], n_points, radius))
+    out = np.stack(out, axis=2)
+    out = cv2.convertScaleAbs(out)
+    image = Image.fromarray(cv2.cvtColor(out, cv2.COLOR_BGR2RGB))
+
+    return image
+
+if args.high:
+    frequence_func = laplace_process
+else:
+    frequence_func = lbp_process
+
+
 def main():
     global best_acc
     start_epoch = args.start_epoch  # start from epoch 0 or last checkpoint epoch
@@ -118,7 +141,7 @@ def main():
     # Data
     print('==> Preparing dataset %s' % args.dataset)
     transform_train = transforms.Compose([
-        laplace_process,
+        frequence_func,
         transforms.RandomCrop(32, padding=4),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
@@ -186,6 +209,13 @@ def main():
 
     # Resume
     title = 'cifar-10-' + args.arch
+
+    if args.init_pth is None:
+        save_checkpoint({'state_dict': model.state_dict()}, False, checkpoint=args.save_dir, filename='init.pth.tar')
+    else:
+        init_checkpoint = torch.load(args.init_pth)
+        model.load_state_dict(init_checkpoint['state_dict'])
+
     if args.resume:
         # Load checkpoint.
         print('==> Resuming from checkpoint..')
@@ -207,7 +237,7 @@ def main():
         print(' Test Loss:  %.8f, Test Acc:  %.2f' % (test_loss, test_acc))
         return
 
-    save_checkpoint({'state_dict': model.state_dict()}, False, checkpoint=args.save_dir, filename='init.pth.tar')
+
     train_losses = []
     train_acces = []
     test_losses = []
