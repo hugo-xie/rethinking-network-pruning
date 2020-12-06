@@ -251,7 +251,7 @@ def main():
                     zero_flag = True
                 f.write('layer index: {:d} \t total params: {:d} \t remaining params: {:d}'.
                     format(k, mask.numel(), int(torch.sum(mask))))
-    print('Total conv params: {}, Pruned conv params: {}, Pruned ratio: {}'.format(total, pruned, pruned/total))
+                f.write('Total conv params: {}, Pruned conv params: {}, Pruned ratio: {}'.format(total, pruned, pruned/total))
     # -------------------------------------------------------------
 
     print('\nTesting')
@@ -265,13 +265,13 @@ def main():
             # 'optimizer' : optimizer.state_dict(),
         }, False, checkpoint=args.save_dir)
 
-    with open(os.path.join(args.save_dir, 'prune.txt'), 'w') as f:
-        f.write('Before pruning: Test Loss:  %.8f, Test Acc:  %.2f\n' % (test_loss0, test_acc0))
-        f.write('Total conv params: {}, Pruned conv params: {}, Pruned ratio: {}\n'.format(total, pruned, pruned/total))
-        f.write('After Pruning: Test Loss:  %.8f, Test Acc:  %.2f\n' % (test_loss1, test_acc1))
-
-        if zero_flag:
-            f.write("There exists a layer with 0 parameters left.")
+    # with open(os.path.join(args.save_dir, 'prune.txt'), 'w') as f:
+    #     f.write('Before pruning: Test Loss:  %.8f, Test Acc:  %.2f\n' % (test_loss0, test_acc0))
+    #     f.write('Total conv params: {}, Pruned conv params: {}, Pruned ratio: {}\n'.format(total, pruned, pruned/total))
+    #     f.write('After Pruning: Test Loss:  %.8f, Test Acc:  %.2f\n' % (test_loss1, test_acc1))
+    #
+    #     if zero_flag:
+    #         f.write("There exists a layer with 0 parameters left.")
     return
 
 def test(testloader, model, criterion, epoch, use_cuda):
