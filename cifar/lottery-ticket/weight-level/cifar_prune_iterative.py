@@ -18,6 +18,9 @@ import models.cifar as models
 import cv2
 import numpy as np
 from PIL import Image
+import seaborn as sns
+import pandas as pd
+from skimage.feature import local_binary_pattern
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
 
 

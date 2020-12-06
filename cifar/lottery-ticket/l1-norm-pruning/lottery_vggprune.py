@@ -8,7 +8,11 @@ from torch.autograd import Variable
 from torchvision import datasets, transforms
 
 from models import *
-
+import numpy as np
+import seaborn as sns
+import pandas as pd
+from skimage.feature import local_binary_pattern
+import cv2
 
 # Prune settings
 parser = argparse.ArgumentParser(description='PyTorch Slimming CIFAR prune')

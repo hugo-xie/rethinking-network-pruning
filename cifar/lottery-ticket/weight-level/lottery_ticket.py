@@ -16,10 +16,15 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 
 import models.cifar as models
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 import cv2
 import numpy as np
 from PIL import Image
+from skimage.feature import local_binary_pattern
+import seaborn as sns
 
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
 from utils.misc import get_conv_zero_param
@@ -28,6 +33,7 @@ from utils.misc import get_conv_zero_param
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
     and callable(models.__dict__[name]))
+sns.set()
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10/100 Training')
 # Datasets
@@ -79,6 +85,7 @@ parser.add_argument('--save_dir', default='results/', type=str)
 #Device options
 parser.add_argument('--gpu-id', default='0', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
+parser.add_argument('--high', action='store_true')
 
 args = parser.parse_args()
 state = {k: v for k, v in args._get_kwargs()}
@@ -255,6 +262,11 @@ def main():
             mask = weight_copy.gt(0).float().cuda()
             m.weight.data.mul_(mask)
 
+    train_losses = []
+    train_acces = []
+    test_losses = []
+    test_acces = []
+
     # Train and val
     for epoch in range(start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch)
@@ -267,6 +279,11 @@ def main():
 
         train_loss, train_acc = train(trainloader, model, criterion, optimizer, epoch, use_cuda)
         test_loss, test_acc = test(testloader, model, criterion, epoch, use_cuda)
+
+        train_losses.append(train_loss)
+        train_acces.append(train_acc)
+        test_acces.append(test_acc)
+        test_losses.append(test_loss)
 
         # append logger file
         logger.append([state['lr'], train_loss, test_loss, train_acc, test_acc])
@@ -283,6 +300,12 @@ def main():
             }, is_best, checkpoint=args.save_dir)
 
     logger.close()
+
+    sns.lineplot(x=range(len(test_acces)), y=test_acces, color='red', dashes=True)
+    plt.xlabel("episode")
+    plt.ylabel("accuracy")
+    plt.legend()
+    plt.savefig(os.path.join(args.save_dir, "test.png"))
 
     print('Best acc:')
     print(best_acc)
