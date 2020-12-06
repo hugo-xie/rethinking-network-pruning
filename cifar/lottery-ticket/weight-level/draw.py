@@ -9,5 +9,6 @@ parser.add_argument('--inverse', default='0', type=str, metavar='N',
                     help='manual epoch number (useful on restarts)')
 args = parser.parse_args()
 
+import pdb; pdb.set_trace()
 ori_data = pd.read_table(args.ori, sep='\t')
 print(ori_data)
