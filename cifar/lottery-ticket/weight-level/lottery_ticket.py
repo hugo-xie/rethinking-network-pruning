@@ -19,7 +19,7 @@ import models.cifar as models
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
+import pywt
 import cv2
 import numpy as np
 from PIL import Image
