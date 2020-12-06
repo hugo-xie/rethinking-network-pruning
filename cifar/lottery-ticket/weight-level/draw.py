@@ -1,10 +1,10 @@
 import pandas as pd
 import argparse
-import seaborn as sns
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
+import seaborn as sns
 sns.set()
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10/100 Training')
@@ -20,7 +20,7 @@ args = parser.parse_args()
 ori_data = pd.read_table(args.ori, sep='\t')
 print(ori_data)
 
-sns.lineplot(x=range(len(ori_data['Valid Acc.'])), y=ori_data['Valid Acc.'], color='red',dashes=True)
+sns.lineplot(x=range(ori_data['Valid Acc.'].shape[0]), y=ori_data['Valid Acc.'], color='red',dashes=True)
 plt.xlabel("episode")
 plt.ylabel("accuracy")
 plt.legend()
