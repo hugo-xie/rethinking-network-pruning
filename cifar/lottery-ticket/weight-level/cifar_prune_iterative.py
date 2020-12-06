@@ -17,6 +17,7 @@ import torchvision.datasets as datasets
 import models.cifar as models
 import cv2
 import numpy as np
+from PIL import Image
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
 
 
