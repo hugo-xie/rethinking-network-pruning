@@ -273,9 +273,9 @@ def main():
     logger.close()
     sns.lineplot(x=range(len(test_acces)), y=test_acces, color='red',dashes=True)
     plt.xlabel("episode")
-    plt.ylabel("reward")
+    plt.ylabel("accuracy")
     plt.legend()
-    plt.savefig("test.png")
+    plt.savefig(os.path.join(args.save_dir,"test.png"))
 
     print('Best acc:')
     print(best_acc)
