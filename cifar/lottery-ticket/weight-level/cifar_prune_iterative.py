@@ -240,16 +240,17 @@ def main():
     pruned = 0
     print('Pruning threshold: {}'.format(thre))
     zero_flag = False
-    for k, m in enumerate(model.modules()):
-        if isinstance(m, nn.Conv2d):
-            weight_copy = m.weight.data.abs().clone()
-            mask = weight_copy.gt(thre).float().cuda()
-            pruned = pruned + mask.numel() - torch.sum(mask)
-            m.weight.data.mul_(mask)
-            if int(torch.sum(mask)) == 0:
-                zero_flag = True
-            print('layer index: {:d} \t total params: {:d} \t remaining params: {:d}'.
-                format(k, mask.numel(), int(torch.sum(mask))))
+    with open(os.path.join(args.save_dir, 'prune.txt'), 'w') as f:
+        for k, m in enumerate(model.modules()):
+            if isinstance(m, nn.Conv2d):
+                weight_copy = m.weight.data.abs().clone()
+                mask = weight_copy.gt(thre).float().cuda()
+                pruned = pruned + mask.numel() - torch.sum(mask)
+                m.weight.data.mul_(mask)
+                if int(torch.sum(mask)) == 0:
+                    zero_flag = True
+                f.write('layer index: {:d} \t total params: {:d} \t remaining params: {:d}'.
+                    format(k, mask.numel(), int(torch.sum(mask))))
     print('Total conv params: {}, Pruned conv params: {}, Pruned ratio: {}'.format(total, pruned, pruned/total))
     # -------------------------------------------------------------
 
