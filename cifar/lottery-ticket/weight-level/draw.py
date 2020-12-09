@@ -30,7 +30,7 @@ args = parser.parse_args()
 # plt.savefig(args.name)
 low_mask = open(args.ori,'rb')
 low_mask = pickle.load(low_mask)
-high_mask = open(args.high, 'rb')
+high_mask = open(args.inverse, 'rb')
 high_mask = pickle.load(high_mask)
 for key in high_mask.keys():
     print(key)
