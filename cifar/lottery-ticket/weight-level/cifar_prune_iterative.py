@@ -22,7 +22,7 @@ import seaborn as sns
 import pywt
 from skimage.feature import local_binary_pattern
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
-
+import pickle
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
@@ -262,17 +262,21 @@ def main():
     pruned = 0
     print('Pruning threshold: {}'.format(thre))
     zero_flag = False
+    mask_dict = {}
     with open(os.path.join(args.save_dir, 'prune.txt'), 'w') as f:
         for k, m in enumerate(model.modules()):
             if isinstance(m, nn.Conv2d):
                 weight_copy = m.weight.data.abs().clone()
                 mask = weight_copy.gt(thre).float().cuda()
+                mask_dict[k] = weight_copy.gt(thre).cpu().numpy()
                 pruned = pruned + mask.numel() - torch.sum(mask)
                 m.weight.data.mul_(mask)
                 if int(torch.sum(mask)) == 0:
                     zero_flag = True
                 f.write('layer index: {:d} \t total params: {:d} \t remaining params: {:d} \n'.
-                    format(k, mask.numel(), int(torch.sum(mask))))
+                        format(k, mask.numel(), int(torch.sum(mask))))
+        with open(os.path.join(args.save_dir, "mask.pkl"), 'wb') as fp:
+            pickle.dump(mask_dict, fp)
         f.write('Total conv params: {}, Pruned conv params: {}, Pruned ratio: {}'.format(total, pruned, pruned/total))
     # -------------------------------------------------------------
 
