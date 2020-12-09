@@ -46,7 +46,7 @@ for key in high_mask.keys():
 
 len = np.arange(len(mask_out["sim"]))
 width = 0.25
-fig, ax = plt.subplots(figsize=(5,4))
+fig, ax = plt.subplots(figsize=(6,5))
 rects1 = ax.bar(len - width/2, mask_out['sim'], width, label='sim')
 rects2 = ax.bar(len + width/2, mask_out['diff'], width, label='diff')
 ax.set_ylabel('proportion')
