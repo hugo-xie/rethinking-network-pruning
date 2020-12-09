@@ -6,6 +6,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pickle
+import numpy as np
 sns.set()
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10/100 Training')
@@ -32,6 +33,22 @@ low_mask = open(args.ori,'rb')
 low_mask = pickle.load(low_mask)
 high_mask = open(args.inverse, 'rb')
 high_mask = pickle.load(high_mask)
+mask_out = {"sim":[], "diff":[]}
 for key in high_mask.keys():
-    import pdb; pdb.set_trace()
-    print(key)
+    #import pdb; pdb.set_trace()
+    #print(key)
+    total_num = high_mask[key].size()
+    and_out = high_mask[key]&low_mask[key]
+    sim_out = np.sum(and_out) / total_num
+    mask_out["sim"].append(sim_out)
+    mask_out["diff"].append(1-sim_out)
+
+len = np.arange(len(mask_out["sim"]))
+width = 0.25
+fig, ax = plt.subplots(figsize=(5,4))
+rects1 = ax.bar(len - width/2, mask_out['sim'], width, label='sim')
+rects2 = ax.bar(len + width/2, mask_out['diff'], width, label='diff')
+ax.set_ylabel('proportion')
+ax.set_title('layer index')
+ax.legend()
+plt.savefig(args.name)
