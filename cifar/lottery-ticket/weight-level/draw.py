@@ -36,9 +36,9 @@ high_mask = pickle.load(high_mask)
 mask_out = {"sim":[], "diff":[]}
 for key in high_mask.keys():
     #import pdb; pdb.set_trace()
-    #print(key)
-    print(high_mask[key])
-    total_num = high_mask[key].size()
+    # #print(key)
+    # high_mask[key]
+    total_num = high_mask[key].size
     and_out = high_mask[key]&low_mask[key]
     sim_out = np.sum(and_out) / total_num
     mask_out["sim"].append(sim_out)
