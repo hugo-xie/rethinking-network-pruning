@@ -33,4 +33,5 @@ low_mask = pickle.load(low_mask)
 high_mask = open(args.inverse, 'rb')
 high_mask = pickle.load(high_mask)
 for key in high_mask.keys():
+    import pdb; pdb.set_trace()
     print(key)
