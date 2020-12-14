@@ -331,7 +331,7 @@ def train(trainloader, model, criterion, optimizer, epoch, use_cuda):
     bar = Bar('Processing', max=len(trainloader))
     print(args)
     print(len(trainloader))
-    for batch_idx, (inputs, targets) in enumerate(trainloader):
+    for batch_idx, (inputs, targets) in enumerate(trainloader, 0):
         # measure data loading time
         data_time.update(time.time() - end)
 
