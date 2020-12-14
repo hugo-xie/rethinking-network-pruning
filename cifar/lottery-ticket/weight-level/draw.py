@@ -40,7 +40,7 @@ for key in high_mask.keys():
     # high_mask[key]
     total_num = high_mask[key].size
     and_out = high_mask[key].astype(float) - low_mask[key].astype(float)
-    and_out = (and_out !=0).sum()
+    and_out = (and_out != 0).sum()
     sim_out = np.sum(total_num - and_out) / total_num
     mask_out["sim"].append(sim_out)
     mask_out["diff"].append(1-sim_out)

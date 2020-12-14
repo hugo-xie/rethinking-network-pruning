@@ -86,6 +86,8 @@ parser.add_argument('--save_dir', default='results/', type=str)
 parser.add_argument('--gpu-id', default='0', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
 parser.add_argument('--high', action='store_true')
+parser.add_argument('--start_class', type=int, default=0, help='start class')
+parser.add_argument('--end_class', type=int, default=100, help='end class')
 
 args = parser.parse_args()
 state = {k: v for k, v in args._get_kwargs()}
@@ -152,6 +154,48 @@ def wave_process(img):
 #     frequence_func = lbp_process
 
 frequence_func = wave_process
+
+
+def get_split_cifar100(start_class,end_class):
+    # convention: tasks starts from 1 not 0 !
+    # task_id = 1 (i.e., first task) => start_class = 0, end_class = 4
+
+    transform_train = transforms.Compose([
+        #frequence_func,
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    ])
+
+    transform_test = transforms.Compose([
+        #frequence_func,
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    ])
+
+    if args.dataset == 'cifar10':
+        dataloader = datasets.CIFAR10
+        num_classes = 10
+    else:
+        dataloader = datasets.CIFAR100
+        num_classes = 100
+
+    trainset = dataloader(root='./data', train=True, download=True, transform=transform_train)
+    targets_train = torch.tensor(trainset.targets)
+    target_train_idx = ((targets_train >= start_class) & (targets_train < end_class))
+
+    testset = dataloader(root='./data', train=False, download=False, transform=transform_test)
+    targets_test = torch.tensor(testset.targets)
+    target_test_idx = ((targets_test >= start_class) & (targets_test < end_class))
+
+    train_loader = torch.utils.data.DataLoader(
+        torch.utils.data.dataset.Subset(train, np.where(target_train_idx == 1)[0]), batch_size=args.train_batch, shuffle=True, num_workers=args.workers)
+    test_loader = torch.utils.data.DataLoader(torch.utils.data.dataset.Subset(test, np.where(target_test_idx == 1)[0]),
+                                              batch_size=args.test_batch, shuffle=False, num_workers=args.workers)
+
+    return train_loader, test_loader
+
 def main():
     global best_acc
     start_epoch = args.start_epoch  # start from epoch 0 or last checkpoint epoch
@@ -160,32 +204,12 @@ def main():
 
     # Data
     print('==> Preparing dataset %s' % args.dataset)
-    transform_train = transforms.Compose([
-        frequence_func,
-        transforms.RandomCrop(32, padding=4),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-    ])
+    trainloader, testloader = get_split_cifar100(args.start_class, args.end_class)
 
-    transform_test = transforms.Compose([
-        frequence_func,
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-    ])
     if args.dataset == 'cifar10':
-        dataloader = datasets.CIFAR10
         num_classes = 10
     else:
-        dataloader = datasets.CIFAR100
         num_classes = 100
-
-
-    trainset = dataloader(root='./data', train=True, download=True, transform=transform_train)
-    trainloader = data.DataLoader(trainset, batch_size=args.train_batch, shuffle=True, num_workers=args.workers)
-
-    testset = dataloader(root='./data', train=False, download=False, transform=transform_test)
-    testloader = data.DataLoader(testset, batch_size=args.test_batch, shuffle=False, num_workers=args.workers)
 
     # Model
     print("==> creating model '{}'".format(args.arch))
