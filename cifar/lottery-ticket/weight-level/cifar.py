@@ -180,10 +180,9 @@ def get_split_cifar100(start_class,end_class):
     testset = dataloader(root='./data', train=False, download=False, transform=transform_test)
     targets_test = torch.tensor(testset.targets)
     target_test_idx = ((targets_test >= start_class) & (targets_test < end_class))
-    print(np.where(target_train_idx == 1))
     train_loader = torch.utils.data.DataLoader(
-        torch.utils.data.dataset.Subset(train, np.where(target_train_idx == 1)[0]), batch_size=args.train_batch, shuffle=True, num_workers=args.workers)
-    test_loader = torch.utils.data.DataLoader(torch.utils.data.dataset.Subset(test, np.where(target_test_idx == 1)[0]),
+        torch.utils.data.dataset.Subset(trainset, np.where(target_train_idx == 1)[0]), batch_size=args.train_batch, shuffle=True, num_workers=args.workers)
+    test_loader = torch.utils.data.DataLoader(torch.utils.data.dataset.Subset(testset, np.where(target_test_idx == 1)[0]),
                                               batch_size=args.test_batch, shuffle=False, num_workers=args.workers)
 
     return train_loader, test_loader
